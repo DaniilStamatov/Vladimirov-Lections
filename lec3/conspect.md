@@ -204,7 +204,7 @@ int main() {
     int *api[20] = {nullptr};
     int (*pai)[20] = &ai; // pointer to array of 20 ints
     int (&rai)[20] = ai; // reference to array of 20 ints
-
+    int (&prai)[20] = *pai; // reference to an array of 20 ints that has been created by dereferencing a pointer to an array of 20 ints
     std::cout << api << " + 1 = " << api + 1<< std::endl;
     std::cout << pai << " + 1 = " << pai + 1 << std::endl;
 
@@ -212,6 +212,7 @@ int main() {
     (*pai)[2] += 2;
 
     std::cout << "ai[2]: " << ai[2] << std::endl;
+    std::cout << "ai[2]: " << prai[2] << std::endl;
 }
 output
 0x7ffffaf67c20 + 1 = 0x7ffffaf67c28 // sizeof(int*)
@@ -220,5 +221,17 @@ ai[2]: 42
 ```
 
 
-if we do x += 1 we step on length of 20 pointers on int
-if we do y += 1 we step on one pointer? 
+# CDECL
+```cpp
+char *(*(&c)[10])(int *&p); // reference to an array on 10 pointers on a function that takes reference to pointer and returning pointer to char
+void (*bar(int x, void (*func)(int&))) (int&); 
+
+typedef void (*ptr_to_fref)(int&);
+ptr_to_fref bar(int x, ptr_to_fref func);
+
+same as
+
+using ptr_to_fref = void(*)(int&);
+ptr_to_fref bar(int x, ptr_to_fref func);
+```
+
