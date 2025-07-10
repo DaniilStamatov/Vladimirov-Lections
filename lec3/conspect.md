@@ -264,3 +264,24 @@ C language gives 2 guaranties. 1st is about names and 2nd is that in c there is 
 BUT this 2 guaranties cant provide us overloding. Or give methods of class.
 
 If we take C and remove from it guarantie to the names and adding anything that we get from removing it -> we get C++ 
+
+```cpp
+
+struct S {
+int foo(int) __attribute((noinline));  
+};
+
+int foo(S*p, int x) {return p->foo(x); } // _Z3fooP1Si
+int foo(int x) {{return x;}} // _Z3fooi
+
+int S::foo(int x) {return x;} // _ZN1S3fooEi
+extern "C" int bar(int x) {return x;}// WE CANT OVERLOAD FOO
+```
+
+### Discussion
+```cpp
+extern "C" template <typename T> void foo(T x); // cant do cause have no templates
+struct S { extern "C" void foo();} // cant do because of S is struct and contains invisible (this) in the point of instansing
+```
+
+ 
