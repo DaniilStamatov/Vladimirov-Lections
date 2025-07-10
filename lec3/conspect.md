@@ -128,7 +128,7 @@ struct S {
 int main () {
 S x{1, 2}; // ok! lifetime extended not temporary but permanent object
 
-S *p  = new S{1, 2}; // this is a late parrot! because S(on the right) is a temporary object
+S *p  = new S{1, 2}; // ⚠️ this is a late parrot! because S(on the right) is a temporary object
 
 const int& i = 2;
 // So in this case 
@@ -144,9 +144,9 @@ const int& i = 2;
 ```cpp
 
 int foo(int &x); 
-foo(1); // compilation error //Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
+foo(1); // ❌  compilation error //Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
 
-int& x = 1; //Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
+int& x = 1; // ❌ Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
 
 ```
 
@@ -165,7 +165,7 @@ void foo(int *);
 int arr[5];
 int *t = arr + 3; // ok (arr acts like rvalue)
 foo(arr); // ok
-arr = t; // fail (arr acts like lvalue!)
+arr = t; // ❌  fail (arr acts like lvalue!)
 ```
 
 # Lvalue & rvalue
@@ -235,3 +235,32 @@ using ptr_to_fref = void(*)(int&);
 ptr_to_fref bar(int x, ptr_to_fref func);
 ```
 
+### Alternative to typedef : using
+
+using ptr_to_fref = void (*) (int&);
+template<typename T> 
+using ptr_to_fref = void (*) (T&);
+
+we get here later on but now we discuss literature:
+
+# BOOOKS
+
+1. [CC11] ISO/IEC 14882 - "Information technology - Programming languages - C++" , 2011
+2. [BS] Bjarne Stroustrup - The C++ Programming Language (4th Edition), 2014
+3. [GB] Grady Booch - Object-Oriented Analysis and Design with applications, 2007 
+4. [GCT] Eberly, Schneider - Geometric Tools for Computer Graphics, 2002
+5. [GS] Gilbert Strang - Introduction to Linead Algebra, Fifth Edition, 2016
+6. [BB] Ben Saks - Back to Basics: Pointers and Memory, CppCon, 2020
+
+
+# MANGLING
+In C Language when we create a name we give the guarantie on the names. It means that we cannot overload functions
+* Mangling is the process of transformation a name in assembler to provide unique name of variable *
+
+So C++ does not give guaranties to the names except cases of extern "C" so it will be the same as C style
+
+C language gives 2 guaranties. 1st is about names and 2nd is that in c there is nothing implicit
+
+BUT this 2 guaranties cant provide us overloding. Or give methods of class.
+
+If we take C and remove from it guarantie to the names and adding anything that we get from removing it -> we get C++ 

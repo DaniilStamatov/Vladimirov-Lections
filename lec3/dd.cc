@@ -27,5 +27,5 @@ std::cout << s.y << std::endl;
 int foo(int &x); 
 foo(1); // compilation error
 
-int& x = 1;
+int& x = 1;// compilation error
 }
