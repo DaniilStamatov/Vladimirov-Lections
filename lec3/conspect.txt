@@ -81,13 +81,13 @@ int main () {
 ## Object Lifetime
 
 The lifetime of a variable is the time during which its state is valid.
-```cpp
+```
 int main() {
   int a = a; // ❌ UB — a is declared but uninitialized!
 }
 ```
 
-```cpp
+```
 int a = 2;
 
 void foo () {
@@ -102,14 +102,14 @@ void foo () {
   b += *pc; // ❌ UB — using a dangling pointer!
 }
 ```
-```cpp
+```
 int* p = new int[5];
 int& x = p[3];
 delete[] p;
 x += 1; // ❌ UB — using a reference to a deleted object!
 
 ```
-```cpp
+```
 int& foo() {
   int x = 42;
   return x; // ❌ returning reference to local variable — UB
@@ -118,100 +118,5 @@ int& foo() {
 int x = foo(); // x refers to expired object
 ```
 
-## Temporary object lives to the end of fully statement
-
-```cpp
-struct S {
-  int x;
-  const int &y;
-};
-int main () {
-S x{1, 2}; // ok! lifetime extended not temporary but permanent object
-
-S *p  = new S{1, 2}; // this is a late parrot! because S(on the right) is a temporary object
-
-const int& i = 2;
-// So in this case 
-// int __temp = 2; 
-// S x;
-// x.x = 1;
-// x.y = __temp; 
-}
-
-```
-# DONT use member of class or struct unless you exactly know what you are doing
-
-```cpp
-
-int foo(int &x); 
-foo(1); // compilation error //Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
-
-int& x = 1; //Non-const lvalue reference to type 'int' cannot bind to a temporary of type 'int'c
-
-```
-
-## Literal is always rvalue
-
-# Decaying
-```cpp
-int foo ( const int& t) {
-  return t;
-}
-```
-Reference to an object in expressions acts like an object itself!
-We met something like this before
-``` cpp
-void foo(int *);
-int arr[5];
-int *t = arr + 3; // ok (arr acts like rvalue)
-foo(arr); // ok
-arr = t; // fail (arr acts like lvalue!)
-```
-
-# Lvalue & rvalue
-
-In c lang lvalue meant left-hand-side value
-```cpp
-y = x;
-//here y is lvalue x rvalue
-```
-
-## Is it right for C++? 
-
-```cpp 
-int& foo();
-foo() = x; // ok!!! 
-```
-
-In C++ lvalue is more like "location value"
-
-In c++11 there is glvalue(later on our lectures)
-
-## Sleeping test
-
-```cpp 
-int* x[20];  // x here is array of 20 pointers on int
-int(*y)[20]; // y is pointer on array (*y) go right nothing, go left pointer, go up, go right on array
-```
-
-What is the difference? 
-
-```cpp
-#include <iostream>
-
-int main() {
-    int ai[20] = {0};
-    int *api[20] = {nullptr};
-    int (*pai)[20] = &ai;
-    int (&rai)[20] = ai;
-
-    std::cout << api << " + 1 = " << api + 1<< std::endl;
-    std::cout << pai << " + 1 = " << pai + 1 << std::endl;
-    0x7ffffaf67c20 + 1 = 0x7ffffaf67c28 // sizeof(int*)
-    0x7ffffaf67bd0 + 1 = 0x7ffffaf67c20 // 20 * sizeof(int)
-}
-```
 
 
-if we do x += 1 we step on length of 20 pointers on int
-if we do y += 1 we step on one pointer? 
