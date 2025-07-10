@@ -1,54 +1,60 @@
-#Theme: Names and entities
 
-##Context
-Context can be:
-1. Module
-2. Class/struct
-3. Function
+# Context and Encapsulation
+
+**Context** is a scope that can encapsulate data. It can be:
+
+1. Module  
+2. Class/Struct  
+3. Function  
 4. Private member
 
-**Context can encapsulate data in itself.** 
-1. Static variable in function is not visible to noone except this function
-2. Variable that is local in module(espesiially if it is static) 
-3. Private member of class is not visible to anyone except members of this class
-Visible means actually that it couldn't be used as name, because we can actually get an access to this memory(because we have linear memory in c++)
+**Context can encapsulate data within itself.**
 
-So concealment(сокрытие) is a mechanism of abstraction. It is used for maintaining invariants *it means that object's internal state remains valid through its lifetime*
+Examples:
 
-If invariant is violated it can lead to UB.
+- A `static` variable inside a function is **not visible** to anything outside this function.
+- A variable local to a module (especially if `static`) is **not accessible** outside the module.
+- A `private` member of a class is **not accessible** outside that class.
 
-**Malloc and free don't know anything about constructors. So when we create an object using malloc we get an object in inconcistent state**
-Lifetime of an object has begun but all field of it are stateless. 
+> 🔒 "Visible" here means "accessible by name." Technically, in C++ we can still access memory directly (due to linear memory model), but it's unsafe and not recommended.
 
-##NEW and DELETE
+**Encapsulation (concealment)** is a mechanism of abstraction.  
+It's used to **maintain invariants** — i.e., to ensure the internal state of an object remains valid throughout its lifetime.
 
-So in c++ there is a special keyword for creating objects in heap. It is "new".
+> ⚠️ If an invariant is violated, it may lead to **undefined behavior (UB).**
 
-**But there are two types of new keyword.** 
-1. new 
-2. new []
+---
 
-When we create memory with a little bit more memory. It returns a pointer to the beginning of new memory but it steps a little bit and this little memory contains how many memory was allocated. So when we free this memory we read this block and deallocate exactly this block of memory
+# `malloc` vs `new` — Object Lifetime
 
-For new we don't need this tricks because new knows sizeof(T) and knows how much we need to delete.
-int* t = new Widget; -> allocate memory
-delete t; -> free memory 
+`malloc` and `free` do **not** know anything about constructors or destructors.  
+So when you allocate memory with `malloc`, the object is created in an **inconsistent state**:
 
-BUT when we create an array we need HOW MANY objects were created. 
-int* t = new Widget[5]; -> here we contain how many times object was created
-delete [] t; -> delete array
+- The object's lifetime has begun.
+- But its fields are uninitialized or "stateless."
 
-**WHAT will happend if we made a mistake and mix up this operators**
-using mvi = MyVector<int>;
-mvi* pv = new mvi{}; // ctor;
-mvi* pvs = new MyVector<int>[5]; // 5 ctors
-mvi* vpv = static_cast<mvi*> malloc(sizeof(mvi)); // holy shit
-delete pv;
-delete [] pvs;
-free(vpv); 
+In contrast, **C++ provides the `new` and `delete` keywords** for object creation and destruction.
+
+---
+
+# `new` and `new[]`
+
+There are two types of `new` in C++:
+
+1. `new T` — creates a single object  
+2. `new T[]` — creates an array of objects
+
+## How `new[]` Works Internally
+
+When allocating an array with `new[]`, the compiler typically allocates **a little extra memory** to store the number of elements.  
+This number is used later by `delete[]` to know **how many destructors to call**.
+
+Example:
+```cpp
+int* t = new Widget[5]; // 5 constructors called
+delete[] t;             // 5 destructors called
 
 
-## code from newdelete.cc
 #include <iostream>
 
 struct MySmallClass {
@@ -69,10 +75,45 @@ int main () {
   MyBigClass* pS = new MyBigClass[5];
   MySmallClass* ps = new MySmallClass[5];
 
-  delete[] s; // terybly wrong!!!!!
+  delete[] s; // ❌ TERRIBLY WRONG!
+}
+```
+## Object Lifetime
+
+The lifetime of a variable is the time during which its state is valid.
+```
+int main() {
+  int a = a; // ❌ UB — a is declared but uninitialized!
+}
+```
+
+```
+int a = 2;
+
+void foo () {
+  int b = a + 3;
+  int* pc;
+
+  if (b > 5) {
+    int c = (a + b) / 2;
+    pc = &c; // c goes out of scope here — pointer pc becomes dangling!
+  }
+
+  b += *pc; // ❌ UB — using a dangling pointer!
+}
+```
+```
+int* p = new int[5];
+int& x = p[3];
+delete[] p;
+x += 1; // ❌ UB — using a reference to a deleted object!
+
+```
+```
+int& foo() {
+  int x = 42;
+  return x; // ❌ returning reference to local variable — UB
 }
 
-so what is happening here is that delete[] s is trying to get memory in s-2 and gets junk that contains there. In my case it is number 21 but it can be actally anything else
-DONT EVER use delete []  on something that was created with simple new!
-
-
+int x = foo(); // x refers to expired object
+```
