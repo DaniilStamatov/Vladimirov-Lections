@@ -1,0 +1,64 @@
+Тип
+Value type - диапазон значений объекта
+Object type - совокупность операций над объектом
+
+В языке C++ имя навсегда связано с типом
+Адрес - это расстояние от начала памяти до начала объекта
+
+тип char - минимально адрессуемая ячейка
+CHAR_BIT это количество бит в байте или количество бит в чаре
+
+
+nullptr != NULL && nullptr != 0 nullptr это ключевое слово обозначающее тип nullptr_t
+
+p[2] = 2[p] = *(p + 2) = p + 2 * sizeof(*p)
+
+int x;
+int& y = x; 
+assert ( y == x)
+
+
+int x[2] = {10, 20};
+int& xref = x[1];
+int* xptr = x[0];
+xref += 1;
+xptr += 1;
+
+assert(x[1] == 21);
+assert(*xptr == 21);
+assert(xptr == &x[1]);
+//l2.cc
+
+int x, y;
+int& xref = x;
+xref = y;
+assert(x == y);
+
+int* xptr = &xref;
+assert(xptr == &x);
+
+//int&* xptrref = &xref;
+int *& xrefptr = xptr;
+// l2_1.cc
+
+const char* s1;// указатель на константные данные west const
+char const* s2;// указатель на константные данные east const
+char * const s3; // константный указатель на изменяемые данные
+char const* const s4;// константный указатель на константные данные
+
+
+char& ref = r; // изменяемая ссылка (изменяемые данные)
+const char& cref = r1; // неизменяемая ссылка(неизменяемые данные)
+
+int foo () { return 42; }
+
+int main() {
+  int x;
+  int& xref = x;
+  const int& fooref = foo(); // cannot bind non const ref to rvalue reference!!!!!!!!!!!!!!!!!
+
+  std::cout << &fooref << &x << &xref << std::endl;
+}
+мы не можем привязать неконстантную ссылку к rvalue(правому выражению)  потому что это временный объект и он будет уничтожен в том же контекте что и уничтожен
+но константная ссылка продлевает время жизни этому объекту
+

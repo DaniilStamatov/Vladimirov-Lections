@@ -1,0 +1,78 @@
+#Theme: Names and entities
+
+##Context
+Context can be:
+1. Module
+2. Class/struct
+3. Function
+4. Private member
+
+**Context can encapsulate data in itself.** 
+1. Static variable in function is not visible to noone except this function
+2. Variable that is local in module(espesiially if it is static) 
+3. Private member of class is not visible to anyone except members of this class
+Visible means actually that it couldn't be used as name, because we can actually get an access to this memory(because we have linear memory in c++)
+
+So concealment(сокрытие) is a mechanism of abstraction. It is used for maintaining invariants *it means that object's internal state remains valid through its lifetime*
+
+If invariant is violated it can lead to UB.
+
+**Malloc and free don't know anything about constructors. So when we create an object using malloc we get an object in inconcistent state**
+Lifetime of an object has begun but all field of it are stateless. 
+
+##NEW and DELETE
+
+So in c++ there is a special keyword for creating objects in heap. It is "new".
+
+**But there are two types of new keyword.** 
+1. new 
+2. new []
+
+When we create memory with a little bit more memory. It returns a pointer to the beginning of new memory but it steps a little bit and this little memory contains how many memory was allocated. So when we free this memory we read this block and deallocate exactly this block of memory
+
+For new we don't need this tricks because new knows sizeof(T) and knows how much we need to delete.
+int* t = new Widget; -> allocate memory
+delete t; -> free memory 
+
+BUT when we create an array we need HOW MANY objects were created. 
+int* t = new Widget[5]; -> here we contain how many times object was created
+delete [] t; -> delete array
+
+**WHAT will happend if we made a mistake and mix up this operators**
+using mvi = MyVector<int>;
+mvi* pv = new mvi{}; // ctor;
+mvi* pvs = new MyVector<int>[5]; // 5 ctors
+mvi* vpv = static_cast<mvi*> malloc(sizeof(mvi)); // holy shit
+delete pv;
+delete [] pvs;
+free(vpv); 
+
+
+## code from newdelete.cc
+#include <iostream>
+
+struct MySmallClass {
+  int t = 1;
+  MySmallClass() { std::cout << "small ctor" << std::endl; }
+  ~MySmallClass() { std::cout << "small dtor" << std::endl; }
+};
+
+struct MyBigClass {
+  int t = 1, p = 2, q = 3;
+  MyBigClass() { std::cout << "big ctor" << std::endl; }
+  ~MyBigClass() { std::cout << "big dtor" << std::endl; }
+};
+
+int main () {
+  MyBigClass* S = new MyBigClass;
+  MySmallClass* s = new MySmallClass;
+  MyBigClass* pS = new MyBigClass[5];
+  MySmallClass* ps = new MySmallClass[5];
+
+  delete[] s; // terybly wrong!!!!!
+}
+
+so what is happening here is that delete[] s is trying to get memory in s-2 and gets junk that contains there. In my case it is number 21 but it can be actally anything else
+DONT EVER use delete []  on something that was created with simple new!
+
+
