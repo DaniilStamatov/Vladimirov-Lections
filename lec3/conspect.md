@@ -1,7 +1,25 @@
 
-# Context and Encapsulation
 
-**Context** is a scope that can encapsulate data. It can be:
+## 📘 Оглавление
+- [Context and Encapsulation](#context-and-encapsulation)
+- [`malloc` vs `new` — Object Lifetime](#malloc-vs-new--object-lifetime)
+- [`new` and `new[]`](#new-and-new)
+  - [How `new[]` Works Internally](#how-new-works-internally)
+  - [Object Lifetime](#object-lifetime)
+  - [Temporary object lives to the end of fully statement](#temporary-object-lives-to-the-end-of-fully-statement)
+- [DONT use member of class or struct unless you exactly know what you are doing](#dont-use-member-of-class-or-struct-unless-you-exactly-know-what-you-are-doing)
+  - [Literal is always rvalue](#literal-is-always-rvalue)
+- [Decaying](#decaying)
+- [Lvalue \& rvalue](#lvalue--rvalue)
+  - [Is it right for C++?](#is-it-right-for-c)
+  - [Sleeping test](#sleeping-test)
+- [CDECL](#cdecl)
+    - [Alternative to typedef : using](#alternative-to-typedef--using)
+- [BOOOKS](#boooks)
+- [MANGLING](#mangling)
+    - [Discussion](#discussion)
+
+# Context and Encapsulation
 
 1. Module  
 2. Class/Struct  
