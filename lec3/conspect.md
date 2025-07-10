@@ -5,10 +5,10 @@
 - [`malloc` vs `new` — Object Lifetime](#malloc-vs-new--object-lifetime)
 - [`new` and `new[]`](#new-and-new)
   - [How `new[]` Works Internally](#how-new-works-internally)
-  - [Object Lifetime](#object-lifetime)
+- [Object Lifetime](#object-lifetime)
   - [Temporary object lives to the end of fully statement](#temporary-object-lives-to-the-end-of-fully-statement)
-- [DONT use member of class or struct unless you exactly know what you are doing](#dont-use-member-of-class-or-struct-unless-you-exactly-know-what-you-are-doing)
-  - [Literal is always rvalue](#literal-is-always-rvalue)
+  - [DONT use member of class or struct unless you exactly know what you are doing](#dont-use-member-of-class-or-struct-unless-you-exactly-know-what-you-are-doing)
+- [Literal is always rvalue](#literal-is-always-rvalue)
 - [Decaying](#decaying)
 - [Lvalue \& rvalue](#lvalue--rvalue)
   - [Is it right for C++?](#is-it-right-for-c)
@@ -17,7 +17,15 @@
     - [Alternative to typedef : using](#alternative-to-typedef--using)
 - [BOOOKS](#boooks)
 - [MANGLING](#mangling)
-    - [Discussion](#discussion)
+  - [Discussion](#discussion)
+  - [Resolving overloadings](#resolving-overloadings)
+  - [Rules of resolving overloadings](#rules-of-resolving-overloadings)
+  - [Constructor overloading](#constructor-overloading)
+  - [Shortly about namespaces](#shortly-about-namespaces)
+  - [meanings of "using" keyword](#meanings-of-using-keyword)
+    - [anonimous namespaces](#anonimous-namespaces)
+- [Tone of voice](#tone-of-voice)
+  - [Correct Hello, world!](#correct-hello-world)
 
 # Context and Encapsulation
 
@@ -96,8 +104,10 @@ int main () {
   delete[] s; // ❌ TERRIBLY WRONG!
 }
 ```
-## Object Lifetime
+# Object Lifetime
 
+<details>
+  <summary> Press to see code examples </summary>
 The lifetime of a variable is the time during which its state is valid.
 ```cpp
 int main() {
@@ -135,6 +145,7 @@ int& foo() {
 
 int x = foo(); // x refers to expired object
 ```
+</details>
 
 ## Temporary object lives to the end of fully statement
 
@@ -157,7 +168,7 @@ const int& i = 2;
 }
 
 ```
-# DONT use member of class or struct unless you exactly know what you are doing
+## DONT use member of class or struct unless you exactly know what you are doing
 
 ```cpp
 
@@ -168,7 +179,7 @@ int& x = 1; // ❌ Non-const lvalue reference to type 'int' cannot bind to a tem
 
 ```
 
-## Literal is always rvalue
+# Literal is always rvalue
 
 # Decaying
 ```cpp
@@ -296,10 +307,189 @@ int S::foo(int x) {return x;} // _ZN1S3fooEi
 extern "C" int bar(int x) {return x;}// WE CANT OVERLOAD FOO
 ```
 
-### Discussion
+## Discussion
 ```cpp
 extern "C" template <typename T> void foo(T x); // cant do cause have no templates
 struct S { extern "C" void foo();} // cant do because of S is struct and contains invisible (this) in the point of instansing
 ```
 
- 
+## Resolving overloadings
+
+float sqrt(float x);
+double sqrt(double x);
+
+after parsing we get name resolution. And this process is interesting;
+
+What do we get when:
+sqrt(42); 
+What function will it choose? 
+
+<details>
+  <summary>Press to get answer</summary>
+
+  It will lead to a compilation error, because `int` is equally far away from `float` and `double`.  
+  (Especially since there's one implicit cast needed to either `float` or `double`.)
+</details>
+
+## Rules of resolving overloadings
+1. Exact match (int -> int, int -> const int&, etc)
+2. Exact match with template( int -> T)
+3. Standard transformations ( int -> char, float -> unsigned short, etc)
+4. Variable count of arguments
+5. Wrong bounded references(literal -> int&, etc)
+   
+We will return to it later
+
+<details>
+<summary> Click to see the code </summary>
+
+```cpp
+#include <iostream>
+//
+// Example of overload 
+// Compile with g++ overload.cc -DN1 ... -DN15
+// (example) g++ overload.cc -DN0 -DN1 -DN10 -DN11 -DN12 -DN2 
+//
+#ifndef N0
+int foo(int x) { return 0;}
+#endif
+
+#ifndef N1
+int foo(const int& x) { return 1;}
+#endif
+
+#ifndef N2
+template <typename T> T foo(T x) {return x;}
+#endif
+
+#ifndef N10
+int foo(char x){ return 10;}
+#endif
+
+#ifndef N11
+int foo(short x) { return 11; }
+#endif
+
+#ifndef N12
+int foo(const char& x) {return 12; }
+#endif
+
+#ifndef N13
+int foo(double x) { return 13; }
+#endif
+
+#ifndef N14
+int foo(...) {return 21;}
+#endif
+
+#ifndef N15
+int foo (int& x) { return 31; }
+#endif 
+
+int main () {
+    std::cout << "result : " << foo(10) << std::endl;
+}
+```
+g++ overload.cc -DN0 -DN1 -DN10 -DN11 -DN12 -DN2 -DN13 -DN15 -DN14
+Leads to compilation error
+</details>
+
+## Constructor overloading
+class line_t { 
+  float a_ = -1.0f, b_ = 1.0f, c_ = 0.0f;
+
+  public:
+    line_t() {} // default
+
+    line_t(const point_t& p1, const point_t& p2); // from two points
+
+    line_t(float a, float b, float c); // params 
+};
+
+## Shortly about namespaces
+
+int x;
+
+int foo() {
+  return ::x; // global namespace
+}
+
+
+namespace Containers {
+  struct List {
+    struct Node{
+
+    };
+  };
+}
+
+
+Containers::List::Node n;
+
+We need namespaces to ensure that Containers is not a type!
+
+IF IN OUR PROGRAM THERE IS NO OBJECT OF TYPE -> THERE IS NO TYPE!
+
+namespace X {
+  int foo();
+}
+
+namespace Y {
+  int foo();
+}
+
+using std::vector;
+
+using namespace X;
+
+vector<int> v;
+v.push_back(foo());
+Mangling sucess;
+
+
+## meanings of "using" keyword
+
+1. adds alias to the type
+2. adds name to the current namespace // using std::vector -> now it is vector in our namespace
+3. take all namespace (using namespace X)
+
+
+### anonimous namespaces
+
+namespace {
+  int foo() {
+    return 42;
+  }
+}
+
+int bar { return foo() ;}
+so it means * Create namespace with complex name and instantly make using namespace *
+
+Why we need it ? For swapping static functions. it helps us to incapsulate in module. because no one can use extern
+
+
+# Tone of voice
+* Do not put garbage in std namespace
+* never writing using namespace in header files
+* use anonimous namespaces instead static functions
+* do not use anonimous namespaces in header files (because anonimous namespace is unique for translation unit)
+
+## Correct Hello, world!
+
+<details>
+<summary> Click to see this magic </summary>
+
+```cpp
+
+#include <iostream>
+
+namespace {
+  const char* const helloworld = "Hello, World!";
+}
+
+int main {
+  std::cout << helloworld << "\n";
+}
+```
+
+</details>
