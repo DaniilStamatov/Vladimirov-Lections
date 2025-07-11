@@ -24,7 +24,7 @@
   - [Shortly about namespaces](#shortly-about-namespaces)
   - [meanings of "using" keyword](#meanings-of-using-keyword)
     - [anonimous namespaces](#anonimous-namespaces)
-- [Tone of voice](#tone-of-voice)
+- [Tone of Voice](#tone-of-voice)
   - [Correct Hello, world!](#correct-hello-world)
 
 # Context and Encapsulation
@@ -283,16 +283,18 @@ we get here later on but now we discuss literature:
 
 
 # MANGLING
-In C Language when we create a name we give the guarantie on the names. It means that we cannot overload functions
-* Mangling is the process of transformation a name in assembler to provide unique name of variable *
+In the C language, when we create a name, we are given **a guarantee** about names. This means that function **overloading is not allowed**.
+* **Mangling** is the process of transforming a name in assembly to provide a **unique identifier** for a variable or function.
+* 
+C++ does not give such guarantees about names — except when `using extern "C"` (which forces C-style linkage and disables mangling).
+C provides two guarantees:
+1. About names — they are unique, so no overloading.
 
-So C++ does not give guaranties to the names except cases of extern "C" so it will be the same as C style
+2. That there is nothing implicit — everything must be explicitly declared and defined.
 
-C language gives 2 guaranties. 1st is about names and 2nd is that in c there is nothing implicit
+> BUT this 2 guaranties can't provide us overloading. Or give methods of a class.
 
-BUT this 2 guaranties cant provide us overloding. Or give methods of class.
-
-If we take C and remove from it guarantie to the names and adding anything that we get from removing it -> we get C++ 
+So, if we take C and **remove** the guarantee about name uniqueness, and **add** everything that this removal allows — we get **C++**.
 
 ```cpp
 
@@ -414,7 +416,7 @@ int foo() {
   return ::x; // global namespace
 }
 
-
+```cpp
 namespace Containers {
   struct List {
     struct Node{
@@ -425,11 +427,12 @@ namespace Containers {
 
 
 Containers::List::Node n;
-
+```
 We need namespaces to ensure that Containers is not a type!
 
 IF IN OUR PROGRAM THERE IS NO OBJECT OF TYPE -> THERE IS NO TYPE!
 
+```cpp
 namespace X {
   int foo();
 }
@@ -444,15 +447,17 @@ using namespace X;
 
 vector<int> v;
 v.push_back(foo());
+
+```
+
 Mangling sucess;
 
 
 ## meanings of "using" keyword
 
-1. adds alias to the type
-2. adds name to the current namespace // using std::vector -> now it is vector in our namespace
-3. take all namespace (using namespace X)
-
+1. Type alias
+2. Brings a name into the current scope (`using std::vector`)
+3. Brings an entire namespace into scope (`using namespace X`)
 
 ### anonimous namespaces
 
@@ -468,11 +473,12 @@ so it means * Create namespace with complex name and instantly make using namesp
 Why we need it ? For swapping static functions. it helps us to incapsulate in module. because no one can use extern
 
 
-# Tone of voice
-* Do not put garbage in std namespace
-* never writing using namespace in header files
-* use anonimous namespaces instead static functions
-* do not use anonimous namespaces in header files (because anonimous namespace is unique for translation unit)
+# Tone of Voice
+
+- Don't put garbage in the `std` namespace.
+- Never write `using namespace` in headers.
+- Use anonymous namespaces instead of `static` functions.
+- Avoid anonymous namespaces in headers — they're unique per translation unit.
 
 ## Correct Hello, world!
 
